@@ -26,11 +26,49 @@ int dev_images_num = 100;
 std::string training_filename = "dataset/mnist_test.csv";
 double alpha = 0.1;
 
+#if defined(_WIN32)
+#include <windows.h>
+std::filesystem::path getExecutablePath() {
+	char buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
+	return std::filesystem::path(buffer).parent_path();
+}
+#elif defined(__linux__)
+#include <unistd.h>
+std::filesystem::path getExecutablePath() {
+	char buffer[PATH_MAX];
+	ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer)-1);
+	if (len != -1) {
+		buffer[len] = '\0';
+		return std::filesystem::path(buffer).parent_path();
+	}
+	return std::filesystem::current_path(); // fallback
+}
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+std::filesystem::path getExecutablePath() {
+	char buffer[PATH_MAX];
+	uint32_t size = sizeof(buffer);
+	if (_NSGetExecutablePath(buffer, &size) == 0) {
+		return std::filesystem::path(buffer).parent_path();
+	}
+	return std::filesystem::current_path(); // fallback
+}
+#else
+std::filesystem::path getExecutablePath() {
+	return std::filesystem::current_path(); // generic fallback
+}
+#endif
+
+std::filesystem::path exe_dir = getExecutablePath();
+
 
 /* File handling */
 
+
 std::tuple<int, int> get_csv_size(const std::string& path) {
-	std::ifstream file(path);
+	std::filesystem::path real_path = exe_dir / path;
+	std::ifstream file(real_path);
 	std::string line;
 
 	int rows = 0;
@@ -58,7 +96,8 @@ std::tuple<int, int> get_csv_size(const std::string& path) {
 }
 
 Eigen::MatrixXd load_csv(const std::string& path, int rows, int cols) {
-    std::ifstream file(path);
+	std::filesystem::path real_path = exe_dir / path;
+    std::ifstream file(real_path);
     std::string line;
     std::vector<double> values;
     int row_count = 0;
@@ -217,8 +256,6 @@ int main(int argc, char **argv) {
 	constexpr int window_height = 320;
 
 
-
-
 	// Dataset
 	std::cout << "Loading Dataset" << std::endl;
 
@@ -257,6 +294,8 @@ int main(int argc, char **argv) {
 	trainer.set_accuracy_callback(X_dev, Y_dev, 5);
 	g_trainer = &trainer;
 
+	// UI
+
 	Fl_Window* window = new Fl_Window(window_width, window_height, "MNIST Drawer");
 
 	// Prediction label on the left
@@ -270,7 +309,7 @@ int main(int argc, char **argv) {
 	g_drawing_area = canvas;
 
 	// Clear button below
-	Fl_Button* clear_button = new Fl_Button(20, 80, 80, 30, "Clear");
+	Fl_Button* clear_button = new Fl_Button(20, 65, 80, 30, "Clear");
 	clear_button->callback([](Fl_Widget*, void* data) {
 		DrawingArea* canvas = static_cast<DrawingArea *>(data);
 		canvas->clear();
