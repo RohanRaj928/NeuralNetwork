@@ -7,14 +7,8 @@ This is a numerical digit classifier written entirely from scratch using C++ to 
 This project uses a neural network trained on the MNIST image dataset to classify numerical digits. The code is roughly based on Samason Zhang's neural network tutorial, however this project is written in C++ instead of python and includes an interactive gui.
 
 ## How can I try this out?
-Executable files are available in the Releases section on the right hand side of this
-page, click the latest release and download the correct executable file if available.
-click the 'run' file inside the folder. <br>
-There are also instructions to build this project yourself.
-
-## Build Project
-If a binary isn't available, and you are comfortable using the terminal, follow the next steps to 
-build the project from scratch using cmake.
+You must clone and build this project yourself (Instructions below for UNIX)
+I will include a .exe file for windows soon, or you can build this project yourself with cmake
 
 Clone this repository
 <pre>
@@ -28,12 +22,11 @@ cd build
 </pre>
 Run cmake
 <pre>
-cmake --build .
+cmake ..
+make 
 </pre>
-Run the executable
-<pre>
-./run
-</pre>
+Run the executable by opening the folder and clicking the executable, or running on console
+
 
 ## How do I use this?
 Click the 'train' button to train the neural network. The network has one hidden layer 
