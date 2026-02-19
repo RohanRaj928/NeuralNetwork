@@ -23,7 +23,7 @@
 
 /* Global Vars */
 int dev_images_num = 100;
-std::string training_filename = "dataset/mnist_test.csv";
+std::string training_filename = "dataset/mnist_train.csv";
 double alpha = 0.1;
 
 #if defined(_WIN32)
